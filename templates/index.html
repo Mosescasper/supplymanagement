@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SupplyLink — Integrated Supply Chain Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0B100D;
+      --surface:#131A15;
+      --surface-2:#1B241D;
+      --line:#2C3A2F;
+      --text-hi:#EDF3ED;
+      --text-lo:#93A897;
+      --green:#5FCB7A;
+      --green-dim:#3E8452;
+      --green-glow: rgba(95,203,122,0.18);
+      --amber:#E7A23D;
+      --red:#D9614F;
+      --radius: 10px;
+      --font-display:'Space Grotesk', sans-serif;
+      --font-body:'IBM Plex Sans', sans-serif;
+      --font-mono:'IBM Plex Mono', monospace;
+    }
+    *{box-sizing:border-box; margin:0; padding:0;}
+    html{scroll-behavior:smooth;}
+    body{
+      background:var(--bg);
+      color:var(--text-hi);
+      font-family:var(--font-body);
+      line-height:1.5;
+      -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size:64px 64px;
+      opacity:0.06;
+      pointer-events:none;
+      z-index:0;
+    }
+    a{color:inherit; text-decoration:none;}
+    .wrap{max-width:1180px; margin:0 auto; padding:0 32px; position:relative; z-index:1;}
+    ::selection{background:var(--green); color:#0B100D;}
+
+    /* ---------- NAV ---------- */
+    header{
+      position:sticky; top:0; z-index:50;
+      background:rgba(11,16,13,0.85);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    nav{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:18px 0;
+    }
+    .logo{
+      display:flex; align-items:center; gap:10px;
+      font-family:var(--font-display); font-weight:700; font-size:19px; letter-spacing:0.02em;
+    }
+    .logo-mark{width:28px; height:28px; flex-shrink:0;}
+    .navlinks{display:flex; gap:36px; font-size:14px; color:var(--text-lo);}
+    .navlinks a:hover{color:var(--text-hi);}
+    .nav-cta{
+      display:inline-flex; align-items:center; gap:8px;
+      background:var(--green); color:#0B100D;
+      font-weight:600; font-size:13.5px;
+      padding:10px 18px; border-radius:6px;
+      font-family:var(--font-body);
+      letter-spacing:0.01em;
+    }
+    @media(max-width:820px){ .navlinks{display:none;} }
+
+    /* ---------- HERO ---------- */
+    .hero{
+      padding:96px 0 80px;
+      display:grid; grid-template-columns:1.1fr 0.9fr; gap:56px; align-items:center;
+    }
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:8px;
+      font-family:var(--font-mono); font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+      color:var(--green); border:1px solid var(--green-dim); background:var(--green-glow);
+      padding:6px 12px; border-radius:100px; margin-bottom:22px;
+    }
+    .eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 1.8s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.3;}}
+    h1{
+      font-family:var(--font-display); font-weight:700;
+      font-size:clamp(36px, 4.4vw, 58px); line-height:1.04; letter-spacing:-0.01em;
+      color:var(--text-hi); margin-bottom:22px;
+    }
+    h1 span{color:var(--green);}
+    .hero p.lead{
+      font-size:17px; color:var(--text-lo); max-width:480px; margin-bottom:32px;
+    }
+    .hero-ctas{display:flex; gap:14px; align-items:center; flex-wrap:wrap;}
+    .btn-primary{
+      background:var(--green); color:#0B100D; font-weight:600; font-size:14.5px;
+      padding:14px 24px; border-radius:6px; display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn-ghost{
+      border:1px solid var(--line); color:var(--text-hi); font-weight:500; font-size:14.5px;
+      padding:14px 24px; border-radius:6px;
+    }
+    .btn-ghost:hover{border-color:var(--green-dim);}
+
+    /* manifest card - signature element */
+    .manifest{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow:0 30px 60px -20px rgba(0,0,0,0.6);
+      position:relative;
+    }
+    .manifest-head{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:16px 20px; border-bottom:1px dashed var(--line);
+      font-family:var(--font-mono); font-size:11.5px; color:var(--text-lo); letter-spacing:0.06em;
+    }
+    .manifest-head .live{color:var(--green); display:flex; align-items:center; gap:6px;}
+    .manifest-body{max-height:340px; overflow:hidden; padding:6px 0;}
+    .m-row{
+      display:grid; grid-template-columns:26px 1fr auto auto; gap:12px; align-items:center;
+      padding:12px 20px; border-bottom:1px solid var(--surface-2);
+      font-size:13px;
+    }
+    .m-row:last-child{border-bottom:none;}
+    .m-icon{width:26px; height:26px;}
+    .m-sku{font-family:var(--font-mono); color:var(--text-lo); font-size:11.5px;}
+    .m-name{color:var(--text-hi); font-weight:500;}
+    .m-qty{font-family:var(--font-mono); font-size:12.5px; color:var(--text-lo); text-align:right;}
+    .tag{
+      font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.05em; text-transform:uppercase;
+      padding:3px 8px; border-radius:4px; white-space:nowrap;
+    }
+    .tag-in{background:rgba(95,203,122,0.15); color:var(--green);}
+    .tag-out{background:rgba(231,162,61,0.15); color:var(--amber);}
+    .tag-low{background:rgba(217,97,79,0.15); color:var(--red);}
+    .manifest-foot{
+      padding:14px 20px; border-top:1px solid var(--line);
+      display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px; color:var(--text-lo);
+    }
+    @media(max-width:900px){ .hero{grid-template-columns:1fr;} }
+
+    /* ---------- STAT STRIP ---------- */
+    .stats{
+      border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+      padding:36px 0;
+    }
+    .stats .wrap{display:grid; grid-template-columns:repeat(4,1fr); gap:24px;}
+    .stat-num{font-family:var(--font-display); font-size:30px; font-weight:700; color:var(--green);}
+    .stat-label{font-size:12.5px; color:var(--text-lo); margin-top:4px;}
+    @media(max-width:700px){ .stats .wrap{grid-template-columns:repeat(2,1fr);} }
+
+    /* ---------- SECTION HEADS ---------- */
+    section{padding:100px 0;}
+    .sec-head{max-width:600px; margin-bottom:56px;}
+    .sec-eyebrow{
+      font-family:var(--font-mono); font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+      color:var(--amber); margin-bottom:14px; display:block;
+    }
+    .sec-head h2{
+      font-family:var(--font-display); font-weight:700; font-size:clamp(26px,3vw,38px);
+      letter-spacing:-0.01em; margin-bottom:14px;
+    }
+    .sec-head p{color:var(--text-lo); font-size:15.5px;}
+
+    /* ---------- FEATURES ---------- */
+    .feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+    .feat{background:var(--surface); padding:32px 28px;}
+    .feat-icon{width:40px; height:40px; margin-bottom:20px;}
+    .feat h3{font-family:var(--font-display); font-size:18px; font-weight:600; margin-bottom:10px;}
+    .feat p{font-size:14px; color:var(--text-lo);}
+    @media(max-width:900px){ .feat-grid{grid-template-columns:1fr 1fr;} }
+    @media(max-width:600px){ .feat-grid{grid-template-columns:1fr;} }
+
+    /* ---------- FLOW ---------- */
+    .flow{position:relative;}
+    .flow-line{
+      position:absolute; top:38px; left:5%; right:5%; height:1px;
+      background:repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 16px);
+      z-index:0;
+    }
+    .flow-steps{display:grid; grid-template-columns:repeat(5,1fr); gap:20px; position:relative; z-index:1;}
+    .flow-step{text-align:left;}
+    .flow-num{
+      width:34px; height:34px; border-radius:8px; background:var(--surface); border:1px solid var(--green-dim);
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-mono); font-size:13px; color:var(--green); margin-bottom:16px;
+    }
+    .flow-step h4{font-family:var(--font-display); font-size:15px; font-weight:600; margin-bottom:8px;}
+    .flow-step p{font-size:13px; color:var(--text-lo);}
+    @media(max-width:900px){ .flow-steps{grid-template-columns:1fr 1fr;} .flow-line{display:none;} }
+    @media(max-width:560px){ .flow-steps{grid-template-columns:1fr;} }
+
+    /* ---------- WAREHOUSE ILLUSTRATION BAND ---------- */
+    .illus-band{
+      border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+      background:var(--surface);
+      padding:0;
+    }
+    .illus-svg{width:100%; height:auto; display:block;}
+
+    /* ---------- SCREENS ---------- */
+    .screens{display:grid; grid-template-columns:1fr 1fr; gap:24px;}
+    .screen-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px; }
+    .screen-card h4{font-family:var(--font-display); font-size:15px; margin-bottom:16px; display:flex; align-items:center; gap:8px;}
+    .kpi-row{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px;}
+    .kpi-box{background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:12px;}
+    .kpi-box .n{font-family:var(--font-display); font-weight:700; color:var(--green); font-size:19px;}
+    .kpi-box .l{font-size:10.5px; color:var(--text-lo); margin-top:2px;}
+    .bar-row{display:flex; align-items:center; gap:10px; font-size:12px; margin-bottom:10px;}
+    .bar-track{flex:1; height:6px; background:var(--surface-2); border-radius:3px; overflow:hidden;}
+    .bar-fill{height:100%; background:var(--green); border-radius:3px;}
+    .bar-label{width:90px; color:var(--text-lo); font-family:var(--font-mono); font-size:11px;}
+    @media(max-width:800px){ .screens{grid-template-columns:1fr;} }
+
+    /* ---------- CTA ---------- */
+    .cta-section{
+      text-align:center; padding:110px 0;
+      border-top:1px solid var(--line);
+    }
+    .cta-section h2{font-family:var(--font-display); font-size:clamp(28px,4vw,44px); font-weight:700; margin-bottom:16px;}
+    .cta-section p{color:var(--text-lo); margin-bottom:32px; font-size:15.5px;}
+
+    footer{border-top:1px solid var(--line); padding:36px 0;}
+    footer .wrap{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
+    footer .fmark{font-family:var(--font-mono); font-size:12px; color:var(--text-lo);}
+  </style>
+  
+</head>
+<body>
+  <header>
+    <nav class="wrap">
+      <div class="logo">
+        <svg class="logo-mark" viewBox="0 0 28 28" fill="none">
+          <rect x="2" y="10" width="24" height="14" rx="2" stroke="#5FCB7A" stroke-width="2"/>
+          <path d="M2 10L14 3L26 10" stroke="#5FCB7A" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M14 3V17" stroke="#5FCB7A" stroke-width="2"/>
+        </svg>
+        SupplyLink
+      </div>
+      <div class="navlinks">
+        <a href="#features">Features</a>
+        <a href="#flow">Requisition Flow</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#stack">Tech Stack</a>
+      </div>
+      <a href="#" class="nav-cta">Request a Demo →</a>
+    </nav>
+  </header>
+
+  <!-- ================= HERO ================= -->
+<section class="hero wrap">
+  <div>
+    <div class="eyebrow"><span class="dot"></span> Built for Kenyan institutions Â· KES-native</div>
+    <h1>One shelf,<br>one truth: <span>every item, tracked.</span></h1>
+    <p class="lead">SupplyLink puts the Supply Chain department at the centre of stock â€” inventory, suppliers, purchase orders and departmental requisitions, all reconciled in one ledger.</p>
+    <div class="hero-ctas">
+      <a href="#" class="btn-primary">Request a Demo â†’</a>
+      <a href="#flow" class="btn-ghost">See the Approval Flow</a>
+    </div>
+  </div>
+
+  <div class="manifest">
+    <div class="manifest-head">
+      <span>MANIFEST Â· STOCK MOVEMENT LOG</span>
+      <span class="live"><span class="dot" style="width:6px;height:6px;border-radius:50%;background:#5FCB7A;display:inline-block;animation:pulse 1.8s infinite;"></span> LIVE</span>
+    </div>
+    <div class="manifest-body">
+      <div class="m-row">
+        <svg class="m-icon" viewBox="0 0 26 26"><rect x="3" y="9" width="20" height="13" rx="1.5" stroke="#5FCB7A" stroke-width="1.6"/><path d="M3 9L13 3L23 9" stroke="#5FCB7A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <div><div class="m-name">Amoxicillin 500mg</div><div class="m-sku">SKU-PH-0142</div></div>
+        <span class="tag tag-in">Received</span>
+        <span class="m-qty">+480 units</span>
+      </div>
+      <div class="m-row">
+        <svg class="m-icon" viewBox="0 0 26 26"><rect x="3" y="9" width="20" height="13" rx="1.5" stroke="#E7A23D" stroke-width="1.6"/><path d="M3 9L13 3L23 9" stroke="#E7A23D" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <div><div class="m-name">Surgical Gloves (M)</div><div class="m-sku">SKU-WD-0087</div></div>
+        <span class="tag tag-out">Issued Â· Wards</span>
+        <span class="m-qty">âˆ’120 units</span>
+      </div>
+      <div class="m-row">
+        <svg class="m-icon" viewBox="0 0 26 26"><rect x="3" y="9" width="20" height="13" rx="1.5" stroke="#D9614F" stroke-width="1.6"/><path d="M3 9L13 3L23 9" stroke="#D9614F" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <div><div class="m-name">IV Cannula 18G</div><div class="m-sku">SKU-WD-0033</div></div>
+        <span class="tag tag-low">Low Stock</span>
+        <span class="m-qty">18 left</span>
+      </div>
+      <div class="m-row">
+        <svg class="m-icon" viewBox="0 0 26 26"><rect x="3" y="9" width="20" height="13" rx="1.5" stroke="#5FCB7A" stroke-width="1.6"/><path d="M3 9L13 3L23 9" stroke="#5FCB7A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <div><div class="m-name">A4 Record Folders</div><div class="m-sku">SKU-AD-0211</div></div>
+        <span class="tag tag-in">PO-202607-0004</span>
+        <span class="m-qty">+300 units</span>
+      </div>
+      <div class="m-row">
+        <svg class="m-icon" viewBox="0 0 26 26"><rect x="3" y="9" width="20" height="13" rx="1.5" stroke="#E7A23D" stroke-width="1.6"/><path d="M3 9L13 3L23 9" stroke="#E7A23D" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <div><div class="m-name">Paracetamol 1g Infusion</div><div class="m-sku">SKU-PH-0056</div></div>
+        <span class="tag tag-out">Issued Â· Pharmacy</span>
+        <span class="m-qty">âˆ’96 units</span>
+      </div>
+    </div>
+    <div class="manifest-foot">
+      <span>REQ-202607-0019 Â· Approved by S. Njeri</span>
+      <span>03 JUL 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<div class="stats">
+  <div class="wrap">
+    <div><div class="stat-num">1,240+</div><div class="stat-label">Items tracked across categories</div></div>
+    <div><div class="stat-num">98.4%</div><div class="stat-label">Stock record accuracy</div></div>
+    <div><div class="stat-num">6 dept.</div><div class="stat-label">Requesting departments served</div></div>
+    <div><div class="stat-num">&lt; 2 hrs</div><div class="stat-label">Median requisition turnaround</div></div>
+  </div>
+</div>
+
+<!-- ================= WAREHOUSE ILLUSTRATION ================= -->
+<div class="illus-band">
+  <svg class="illus-svg" viewBox="0 0 1180 220" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="floorFade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#131A15"/>
+        <stop offset="1" stop-color="#0B100D"/>
+      </linearGradient>
+    </defs>
+    <rect width="1180" height="220" fill="url(#floorFade)"/>
+    <!-- floor grid -->
+    <g stroke="#2C3A2F" stroke-width="1" opacity="0.5">
+      <line x1="0" y1="200" x2="1180" y2="200"/>
+      <line x1="60" y1="200" x2="10" y2="150"/>
+      <line x1="260" y1="200" x2="210" y2="150"/>
+      <line x1="460" y1="200" x2="410" y2="150"/>
+      <line x1="660" y1="200" x2="610" y2="150"/>
+      <line x1="860" y1="200" x2="810" y2="150"/>
+      <line x1="1060" y1="200" x2="1010" y2="150"/>
+    </g>
+    <!-- warehouse racks -->
+    <g stroke="#3E8452" stroke-width="2" fill="none">
+      <rect x="70" y="60" width="140" height="120"/>
+      <line x1="70" y1="90" x2="210" y2="90"/>
+      <line x1="70" y1="120" x2="210" y2="120"/>
+      <line x1="70" y1="150" x2="210" y2="150"/>
+    </g>
+    <g fill="#5FCB7A" opacity="0.85">
+      <rect x="80" y="65" width="22" height="20" rx="1.5"/>
+      <rect x="108" y="65" width="22" height="20" rx="1.5"/>
+      <rect x="150" y="95" width="22" height="20" rx="1.5"/>
+      <rect x="178" y="95" width="22" height="20" rx="1.5"/>
+      <rect x="80" y="125" width="22" height="20" rx="1.5"/>
+      <rect x="136" y="125" width="22" height="20" rx="1.5" opacity="0.6"/>
+      <rect x="108" y="155" width="22" height="20" rx="1.5"/>
+      <rect x="164" y="155" width="22" height="20" rx="1.5" opacity="0.6"/>
+    </g>
+    <!-- crate stack -->
+    <g transform="translate(330,110)">
+      <rect x="0" y="0" width="46" height="46" rx="3" fill="none" stroke="#E7A23D" stroke-width="2"/>
+      <path d="M0 15h46M23 15v31" stroke="#E7A23D" stroke-width="1.5"/>
+      <rect x="52" y="14" width="34" height="32" rx="3" fill="none" stroke="#E7A23D" stroke-width="2"/>
+      <rect x="8" y="-32" width="30" height="28" rx="3" fill="none" stroke="#5FCB7A" stroke-width="2"/>
+    </g>
+    <!-- clipboard / requisition -->
+    <g transform="translate(470,70)">
+      <rect x="0" y="0" width="56" height="72" rx="6" fill="none" stroke="#5FCB7A" stroke-width="2"/>
+      <rect x="16" y="-6" width="24" height="12" rx="3" fill="#0B100D" stroke="#5FCB7A" stroke-width="2"/>
+      <line x1="10" y1="20" x2="46" y2="20" stroke="#93A897" stroke-width="2"/>
+      <line x1="10" y1="32" x2="46" y2="32" stroke="#93A897" stroke-width="2"/>
+      <line x1="10" y1="44" x2="34" y2="44" stroke="#93A897" stroke-width="2"/>
+      <path d="M10 56l6 6 12-14" stroke="#5FCB7A" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <!-- delivery truck -->
+    <g transform="translate(600,110)">
+      <rect x="0" y="0" width="90" height="42" rx="3" fill="none" stroke="#93A897" stroke-width="2"/>
+      <path d="M90 12h26l14 18v12H90V12z" fill="none" stroke="#93A897" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="22" cy="48" r="9" fill="#0B100D" stroke="#E7A23D" stroke-width="2.5"/>
+      <circle cx="104" cy="48" r="9" fill="#0B100D" stroke="#E7A23D" stroke-width="2.5"/>
+      <line x1="10" y1="14" x2="70" y2="14" stroke="#3E8452" stroke-width="1.4"/>
+      <line x1="10" y1="24" x2="70" y2="24" stroke="#3E8452" stroke-width="1.4"/>
+    </g>
+    <!-- barcode / SKU tag -->
+    <g transform="translate(780,90)">
+      <rect x="0" y="0" width="72" height="46" rx="4" fill="none" stroke="#5FCB7A" stroke-width="2"/>
+      <g fill="#5FCB7A">
+        <rect x="8" y="10" width="2" height="18"/>
+        <rect x="13" y="10" width="4" height="18"/>
+        <rect x="20" y="10" width="2" height="18"/>
+        <rect x="25" y="10" width="3" height="18"/>
+        <rect x="31" y="10" width="2" height="18"/>
+        <rect x="36" y="10" width="5" height="18"/>
+        <rect x="44" y="10" width="2" height="18"/>
+        <rect x="49" y="10" width="3" height="18"/>
+        <rect x="56" y="10" width="2" height="18"/>
+        <rect x="61" y="10" width="4" height="18"/>
+      </g>
+      <text x="36" y="42" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" fill="#93A897">SKU-0142</text>
+    </g>
+    <!-- pallet / dashboard bars -->
+    <g transform="translate(920,90)">
+      <rect x="0" y="0" width="140" height="90" rx="6" fill="none" stroke="#2C3A2F" stroke-width="2"/>
+      <rect x="14" y="50" width="14" height="26" fill="#5FCB7A"/>
+      <rect x="36" y="34" width="14" height="42" fill="#5FCB7A"/>
+      <rect x="58" y="18" width="14" height="58" fill="#E7A23D"/>
+      <rect x="80" y="44" width="14" height="32" fill="#5FCB7A"/>
+      <rect x="102" y="26" width="14" height="50" fill="#5FCB7A"/>
+    </g>
+  </svg>
+</div>
+
+<!-- ================= FEATURES ================= -->
+<section id="features" class="wrap">
+  <div class="sec-head">
+    <span class="sec-eyebrow">Core Modules</span>
+    <h2>Everything Supply Chain needs to stay the source of truth.</h2>
+    <p>Six modules cover the full loop: from stock on the shelf to the requisition that moved it.</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat">
+      <svg class="feat-icon" viewBox="0 0 40 40" fill="none"><rect x="6" y="16" width="28" height="18" rx="2" stroke="#5FCB7A" stroke-width="2"/><path d="M6 16L20 6L34 16" stroke="#5FCB7A" stroke-width="2" stroke-linejoin="round"/><line x1="6" y1="24" x2="34" y2="24" stroke="#5FCB7A" stroke-width="1.4" opacity="0.5"/></svg>
+      <h3>Inventory Management</h3>
+      <p>SKU-level items with unit cost and category. Live stock-on-hand, configurable reorder levels, and a full audit trail on every adjustment.</p>
+    </div>
+    <div class="feat">
+      <svg class="feat-icon" viewBox="0 0 40 40" fill="none"><circle cx="14" cy="30" r="4" stroke="#5FCB7A" stroke-width="2"/><circle cx="30" cy="30" r="4" stroke="#5FCB7A" stroke-width="2"/><path d="M4 10h6l4 20h18" stroke="#5FCB7A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 10h20l-3 12H16" stroke="#5FCB7A" stroke-width="2" stroke-linejoin="round"/></svg>
+      <h3>Supplier Management</h3>
+      <p>A directory of suppliers with contacts and preferred-item links, plus a full purchase order history per supplier at a glance.</p>
+    </div>
+    <div class="feat">
+      <svg class="feat-icon" viewBox="0 0 40 40" fill="none"><rect x="8" y="6" width="24" height="30" rx="2" stroke="#5FCB7A" stroke-width="2"/><line x1="13" y1="14" x2="27" y2="14" stroke="#5FCB7A" stroke-width="1.6"/><line x1="13" y1="20" x2="27" y2="20" stroke="#5FCB7A" stroke-width="1.6"/><line x1="13" y1="26" x2="22" y2="26" stroke="#5FCB7A" stroke-width="1.6"/></svg>
+      <h3>Purchase Orders</h3>
+      <p>Multi-line POs with auto-generated numbers. Draft â†’ Sent â†’ Received â†’ Cancelled â€” and receiving one restocks and logs the movement automatically.</p>
+    </div>
+    <div class="feat">
+      <svg class="feat-icon" viewBox="0 0 40 40" fill="none"><rect x="9" y="4" width="22" height="32" rx="4" stroke="#5FCB7A" stroke-width="2"/><rect x="15" y="1" width="10" height="6" rx="2" fill="#0B100D" stroke="#5FCB7A" stroke-width="2"/><path d="M14 20l4 4 8-9" stroke="#E7A23D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h3>Requisitions &amp; Approvals</h3>
+      <p>Any department raises a request; Supply Chain approves, rejects or holds it. Fulfilment deducts stock and logs the movement in one step.</p>
+    </div>
+    <div class="feat">
+      <svg class="feat-icon" viewBox="0 0 40 40" fill="none"><rect x="5" y="24" width="6" height="12" fill="#5FCB7A"/><rect x="17" y="16" width="6" height="20" fill="#5FCB7A"/><rect x="29" y="8" width="6" height="28" fill="#E7A23D"/></svg>
+      <h3>Dashboard</h3>
+      <p>Real-time KPIs â€” items, low-stock count, open POs, pending requisitions, stock value â€” with a live movement feed and status filters.</p>
+    </div>
+    <div class="feat">
+      <svg class="feat-icon" viewBox="0 0 40 40" fill="none"><rect x="6" y="8" width="28" height="24" rx="2" stroke="#5FCB7A" stroke-width="2"/><path d="M6 15h28" stroke="#5FCB7A" stroke-width="1.6"/><path d="M13 21l4 4 7-8" stroke="#E7A23D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h3>Reports &amp; Analytics</h3>
+      <p>Export inventory valuation, movement history and PO logs to CSV or Excel â€” filterable by category, supplier, date range and stock status.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FLOW ================= -->
+<section id="flow" class="wrap flow">
+  <div class="sec-head">
+    <span class="sec-eyebrow">Requisition &amp; Approval Flow</span>
+    <h2>From department request to stock issued.</h2>
+    <p>A real sequence, end to end â€” every step logged against the item it touches.</p>
+  </div>
+  <div class="flow-line"></div>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="flow-num">01</div>
+      <h4>Submit</h4>
+      <p>Department staff raise a requisition with items and quantities needed.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">02</div>
+      <h4>Review</h4>
+      <p>Supply Chain checks the request against current stock levels.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">03</div>
+      <h4>Decide</h4>
+      <p>Approve, reject, or hold â€” the requester is notified either way.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">04</div>
+      <h4>Fulfil</h4>
+      <p>Approved items are issued; stock is deducted and the movement logged.</p>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">05</div>
+      <h4>Reorder</h4>
+      <p>If stock runs low, the item surfaces on the dashboard for a new PO.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DASHBOARD PREVIEW ================= -->
+<section id="dashboard" class="wrap">
+  <div class="sec-head">
+    <span class="sec-eyebrow">At a Glance</span>
+    <h2>The dashboard Supply Chain lives in.</h2>
+    <p>KPIs, low-stock alerts, and pending requisitions â€” surfaced the moment you log in.</p>
+  </div>
+  <div class="screens">
+    <div class="screen-card">
+      <h4>ðŸ“Š Today's KPIs</h4>
+      <div class="kpi-row">
+        <div class="kpi-box"><div class="n">1,240</div><div class="l">TOTAL ITEMS</div></div>
+        <div class="kpi-box"><div class="n">27</div><div class="l">LOW STOCK</div></div>
+        <div class="kpi-box"><div class="n">9</div><div class="l">OPEN P.O.s</div></div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-box"><div class="n">14</div><div class="l">PENDING REQ.</div></div>
+        <div class="kpi-box"><div class="n">KES 4.8M</div><div class="l">STOCK VALUE</div></div>
+        <div class="kpi-box"><div class="n">6</div><div class="l">DEPARTMENTS</div></div>
+      </div>
+    </div>
+    <div class="screen-card">
+      <h4>ðŸ“¦ Category Stock Value</h4>
+      <div class="bar-row"><span class="bar-label">Pharmacy</span><div class="bar-track"><div class="bar-fill" style="width:82%"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Wards</span><div class="bar-track"><div class="bar-fill" style="width:64%"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Maintenance</span><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div></div>
+      <div class="bar-row"><span class="bar-label">Admin</span><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TECH STACK ================= -->
+<section id="stack" class="wrap">
+  <div class="sec-head">
+    <span class="sec-eyebrow">Under the Hood</span>
+    <h2>Same stack as Knowledge Repo, ready to connect.</h2>
+    <p>Flask + PostgreSQL, server-rendered with Jinja2, session auth via Flask-Login â€” a natural companion to your existing system.</p>
+  </div>
+  <div class="feat-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="feat"><h3 style="font-size:15px;">Flask</h3><p>All routes, single app.py</p></div>
+    <div class="feat"><h3 style="font-size:15px;">PostgreSQL</h3><p>SQLAlchemy ORM, Alembic migrations</p></div>
+    <div class="feat"><h3 style="font-size:15px;">Jinja2</h3><p>Server-rendered templates</p></div>
+    <div class="feat"><h3 style="font-size:15px;">Flask-Login</h3><p>Role-based staff sessions</p></div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="cta-section wrap">
+  <h2>Put Supply Chain back at the centre.</h2>
+  <p>Inventory, suppliers, purchase orders and requisitions â€” one ledger, one department of record.</p>
+  <a href="#" class="btn-primary">Request a Demo â†’</a>
+</section>
+
+  <footer>
+    <div class="wrap">
+      <span class="fmark">SupplyLink — Integrated Supply Chain Management System</span>
+      <span class="fmark">Built to pair with Knowledge Repo · July 2026</span>
+    </div>
+  </footer>
+</body>
+</html>
