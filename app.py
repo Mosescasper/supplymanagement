@@ -6,6 +6,7 @@ inventory/suppliers/PO/requisition CRUD routes come next.)
 """
 
 from functools import wraps
+from datetime import datetime
 
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import (
@@ -14,7 +15,7 @@ from flask_login import (
 
 from config import Config
 from extensions import db, login_manager
-from models import User, Requisition
+from models import User, Requisition, Department
 
 
 def create_app():
@@ -187,25 +188,218 @@ def register_routes(app):
     @app.route("/dashboard/admin")
     @admin_required
     def admin_dashboard():
-        return render_template("admin/dashboard.html")
+        total_users = User.query.count()
+        total_departments = Department.query.count()
+
+        try:
+            pending_requisitions = Requisition.query.filter_by(status="Pending").count()
+        except Exception:
+            pending_requisitions = 0
+
+        # Low-stock count depends on the Item model, which may not exist
+        # yet in your models.py — guarded so the dashboard never 500s
+        # while inventory is still being built.
+        try:
+            from models import Item
+            low_stock_items = Item.query.filter(Item.quantity_on_hand <= Item.reorder_level).count()
+        except Exception:
+            low_stock_items = 0
+
+        stats = {
+            "total_users": total_users,
+            "total_departments": total_departments,
+            "pending_requisitions": pending_requisitions,
+            "low_stock_items": low_stock_items,
+        }
+
+        departments = []
+        for dept in Department.query.order_by(Department.name.asc()).all():
+            staff_count = User.query.filter_by(department_id=dept.id).count()
+            fill_pct = min(int((staff_count / total_users) * 100), 100) if total_users else 0
+            departments.append({"name": dept.name, "staff_count": staff_count, "fill_pct": fill_pct})
+
+        return render_template(
+            "admin/dashboard.html",
+            stats=stats,
+            departments=departments,
+            recent_activity=[],  # populated once an audit-log model exists
+            today=datetime.utcnow(),
+        )
+
+    @app.route("/admin/users")
+    @admin_required
+    def admin_users():
+        query = User.query
+        search = request.args.get("q", "").strip()
+        if search:
+            query = query.filter(
+                (User.name.ilike(f"%{search}%")) | (User.email.ilike(f"%{search}%"))
+            )
+        department_id = request.args.get("department")
+        if department_id:
+            query = query.filter_by(department_id=department_id)
+
+        users = query.order_by(User.name.asc()).all()
+        departments = Department.query.order_by(Department.name.asc()).all()
+        return render_template("admin/users_list.html", users=users, departments=departments)
+
+    @app.route("/admin/users/new", methods=["GET", "POST"])
+    @app.route("/admin/users/<int:user_id>/edit", methods=["GET", "POST"])
+    @admin_required
+    def admin_user_form(user_id=None):
+        user = User.query.get_or_404(user_id) if user_id else None
+        departments = Department.query.order_by(Department.name.asc()).all()
+
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip().lower()
+            department_id = request.form.get("department_id")
+            role = request.form.get("role", "staff")
+            password = request.form.get("password", "")
+
+            # is_admin is a derived property on User (role == "admin"), not a
+            # real column — so the "Grant Admin access" toggle just forces role.
+            if request.form.get("is_admin"):
+                role = "admin"
+
+            if not name or not email or not department_id:
+                flash("Name, email, and department are required.", "error")
+                return render_template("admin/user_form.html", user=user, departments=departments), 400
+
+            existing = User.query.filter(User.email == email, User.id != (user.id if user else None)).first()
+            if existing:
+                flash("Another account already uses that email.", "error")
+                return render_template("admin/user_form.html", user=user, departments=departments), 400
+
+            if user is None:
+                if not password:
+                    flash("Password is required for a new account.", "error")
+                    return render_template("admin/user_form.html", user=user, departments=departments), 400
+                user = User(name=name, email=email, department_id=department_id, role=role)
+                user.set_password(password)
+                db.session.add(user)
+                flash(f"{name} has been added.", "success")
+            else:
+                user.name = name
+                user.email = email
+                user.department_id = department_id
+                user.role = role
+                if password:
+                    user.set_password(password)
+                flash(f"{name}'s account has been updated.", "success")
+
+            db.session.commit()
+            return redirect(url_for("admin_users"))
+
+        return render_template("admin/user_form.html", user=user, departments=departments)
 
     # ---- Supply Chain portal ----
     @app.route("/dashboard/supply-chain")
     @supply_chain_required
     def supply_chain_dashboard():
-        return render_template("supply_chain/dashboard.html")
+        # Inventory-related stats depend on models (Item, PurchaseOrder,
+        # StockMovement) that may not be built yet — each is guarded so
+        # this dashboard never 500s while the rest of the app catches up.
+        total_items = 0
+        low_stock_items = []
+        total_stock_value = 0
+        try:
+            from models import Item
+            items = Item.query.all()
+            total_items = len(items)
+            low_stock_items = [i for i in items if i.quantity_on_hand <= i.reorder_level][:8]
+            total_stock_value = sum((i.quantity_on_hand or 0) * (i.unit_cost or 0) for i in items)
+        except Exception:
+            pass
+
+        open_purchase_orders = 0
+        try:
+            from models import PurchaseOrder
+            open_purchase_orders = PurchaseOrder.query.filter(
+                PurchaseOrder.status.in_(["Draft", "Sent"])
+            ).count()
+        except Exception:
+            pass
+
+        recent_movements = []
+        try:
+            from models import StockMovement
+            recent_movements = (
+                StockMovement.query.order_by(StockMovement.id.desc()).limit(6).all()
+            )
+        except Exception:
+            pass
+
+        pending_requisition_list = (
+            Requisition.query
+            .filter_by(status="Pending")
+            .order_by(Requisition.created_at.desc())
+            .limit(8)
+            .all()
+        )
+
+        stats = {
+            "total_items": total_items,
+            "low_stock_count": len(low_stock_items),
+            "open_purchase_orders": open_purchase_orders,
+            "pending_requisitions": len(pending_requisition_list),
+            "total_stock_value": total_stock_value,
+        }
+
+        return render_template(
+            "supply_chain/dashboard.html",
+            stats=stats,
+            low_stock_items=low_stock_items,
+            recent_movements=recent_movements,
+            pending_requisition_list=pending_requisition_list,
+            today=datetime.utcnow(),
+        )
 
     # ---- Pharmacy portal ----
     @app.route("/dashboard/pharmacy")
     @pharmacy_required
     def pharmacy_dashboard():
-        return render_template("pharmacy/dashboard.html")
+        requisitions = (
+            Requisition.query
+            .filter_by(department_id=current_user.department_id)
+            .order_by(Requisition.created_at.desc())
+            .all()
+        )
+        stats = {
+            "pending": sum(1 for r in requisitions if r.status == "Pending"),
+            "approved": sum(1 for r in requisitions if r.status == "Approved"),
+            "rejected": sum(1 for r in requisitions if r.status == "Rejected"),
+            "fulfilled": sum(1 for r in requisitions if r.status == "Fulfilled"),
+        }
+        return render_template(
+            "pharmacy/dashboard.html",
+            stats=stats,
+            recent_requisitions=requisitions[:6],
+            today=datetime.utcnow(),
+        )
 
     # ---- Lab portal ----
     @app.route("/dashboard/lab")
     @lab_required
     def lab_dashboard():
-        return render_template("lab/dashboard.html")
+        requisitions = (
+            Requisition.query
+            .filter_by(department_id=current_user.department_id)
+            .order_by(Requisition.created_at.desc())
+            .all()
+        )
+        stats = {
+            "pending": sum(1 for r in requisitions if r.status == "Pending"),
+            "approved": sum(1 for r in requisitions if r.status == "Approved"),
+            "rejected": sum(1 for r in requisitions if r.status == "Rejected"),
+            "fulfilled": sum(1 for r in requisitions if r.status == "Fulfilled"),
+        }
+        return render_template(
+            "lab/dashboard.html",
+            stats=stats,
+            recent_requisitions=requisitions[:6],
+            today=datetime.utcnow(),
+        )
 
     # ---- Every department: view their own requisitions ----
     @app.route("/requisitions/mine")
