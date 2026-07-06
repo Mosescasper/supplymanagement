@@ -1,0 +1,364 @@
+/* ==========================================================================
+   SupplyLink — index.css
+   Dark theme with green accent, fixed icon+label sidebar
+   (matches Knowledge Repo visual language)
+   ========================================================================== */
+
+:root {
+  --bg-body:       #0f1512;
+  --bg-panel:      #161d19;
+  --bg-panel-alt:  #1c2420;
+  --bg-hover:      #212b25;
+  --border-color:  #2a352e;
+
+  --text-primary:   #e8ede9;
+  --text-secondary: #9fb0a6;
+  --text-muted:     #6b7a71;
+
+  --accent:         #34c77b;
+  --accent-hover:   #2ba868;
+  --accent-soft:    rgba(52, 199, 123, 0.12);
+
+  --danger:         #e2574c;
+  --danger-soft:    rgba(226, 87, 76, 0.12);
+  --warning:        #e0b23c;
+  --warning-soft:   rgba(224, 178, 60, 0.12);
+  --info:           #4c9be2;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --sidebar-width: 84px;
+  --shadow-panel: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+/* ---------- App shell ---------- */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: 28px 32px 48px;
+}
+
+/* ---------- Sidebar (fixed icon + label) ---------- */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 0;
+  gap: 4px;
+}
+
+.sidebar-logo {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.sidebar-link {
+  width: 64px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-align: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link .icon { font-size: 18px; }
+
+.sidebar-link:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebar-link.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ---------- Topbar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.topbar h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.topbar .subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #08120d;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: var(--bg-panel-alt);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+.btn-secondary:hover { background: var(--bg-hover); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.btn-danger:hover { background: var(--danger-soft); }
+
+.btn-icon {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+.btn-icon:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+
+/* ---------- Panels / cards ---------- */
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-panel);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+}
+
+.kpi-card .kpi-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-card .kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.kpi-card.alert .kpi-value { color: var(--warning); }
+.kpi-card.danger .kpi-value { color: var(--danger); }
+.kpi-card.accent .kpi-value { color: var(--accent); }
+
+/* ---------- Tables ---------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead th {
+  text-align: left;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+tbody td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+tbody tr:hover { background: var(--bg-panel-alt); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ---------- Status badges ---------- */
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-draft, .badge-pending    { background: var(--warning-soft); color: var(--warning); }
+.badge-sent, .badge-approved    { background: var(--accent-soft); color: var(--accent); }
+.badge-received, .badge-fulfilled { background: var(--accent-soft); color: var(--accent); }
+.badge-cancelled, .badge-rejected { background: var(--danger-soft); color: var(--danger); }
+.badge-low-stock { background: var(--danger-soft); color: var(--danger); }
+
+/* ---------- Forms ---------- */
+
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Line-item rows (Purchase Orders / Requisitions) */
+
+.line-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+
+.line-item-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.line-item-row .remove-line {
+  background: transparent;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* ---------- Flash messages ---------- */
+
+.flash-container {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+}
+
+.flash {
+  min-width: 260px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: flash-in 0.2s ease;
+}
+
+.flash-success { border-color: var(--accent); color: var(--accent); }
+.flash-error   { border-color: var(--danger); color: var(--danger); }
+.flash-warning { border-color: var(--warning); color: var(--warning); }
+.flash-info    { border-color: var(--info); color: var(--info); }
+
+.flash-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.7;
+}
+.flash-close:hover { opacity: 1; }
+
+@keyframes flash-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Low-stock highlight ---------- */
+
+.row-low-stock { background: var(--danger-soft) !important; }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 720px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; padding: 20px; }
+  .line-item-row { grid-template-columns: 1fr 1fr; }
+}

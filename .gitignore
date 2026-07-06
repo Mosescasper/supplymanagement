@@ -1,0 +1,54 @@
+# ---- Environment & secrets ----
+.env
+.env.*
+!.env.example
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# ---- Virtual environments ----
+.venv/
+venv/
+env/
+ENV/
+
+# ---- Flask ----
+instance/
+.webassets-cache
+
+# ---- Database ----
+*.sqlite3
+*.db
+
+# ---- Alembic / migrations (keep the migration scripts, ignore local db state if any) ----
+# Uncomment the next line only if you don't want migration versions tracked:
+# migrations/versions/
+
+# ---- Distribution / packaging ----
+build/
+dist/
+*.egg-info/
+*.egg
+
+# ---- Testing / coverage ----
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---- IDE / editor ----
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- OS junk ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Logs ----
+*.log

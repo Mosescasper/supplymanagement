@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Log In — SupplyLink{% endblock %}
+
+{% block content %}
+<div class="login-shell">
+
+  <!-- ================= BRAND PANEL ================= -->
+  <div class="login-brand">
+    <div class="login-brand-grid"></div>
+
+    <div class="login-brand-top">
+      <div class="brand-mark">📦 <span>SupplyLink</span></div>
+      <p class="brand-tagline">One shelf, one truth — every item, tracked.</p>
+    </div>
+
+    <!-- Signature element: live manifest preview, echoes the landing page -->
+    <div class="manifest-preview">
+      <div class="manifest-preview-head">
+        <span>MANIFEST · LIVE</span>
+        <span class="live-dot"></span>
+      </div>
+      <div class="manifest-preview-row">
+        <span class="mp-name">Amoxicillin 500mg</span>
+        <span class="mp-tag mp-in">Received</span>
+      </div>
+      <div class="manifest-preview-row">
+        <span class="mp-name">Surgical Gloves (M)</span>
+        <span class="mp-tag mp-out">Issued</span>
+      </div>
+      <div class="manifest-preview-row">
+        <span class="mp-name">IV Cannula 18G</span>
+        <span class="mp-tag mp-low">Low Stock</span>
+      </div>
+    </div>
+
+    <p class="login-brand-foot">Built to pair with Knowledge Repo · 2026</p>
+  </div>
+
+  <!-- ================= FORM PANEL ================= -->
+  <div class="login-form-panel">
+    <div class="login-form-card">
+      <span class="login-eyebrow">Staff Sign-In</span>
+      <h1 class="login-heading">Welcome back.</h1>
+      <p class="login-sub">Supply Chain, Pharmacy, and Lab all sign in here — what you see next depends on your department.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="login-flashes">
+            {% for category, message in messages %}
+              <div class="login-flash login-flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login') }}" novalidate class="login-form">
+        <div class="field-group">
+          <label for="login_as">Log in as</label>
+          <select id="login_as" name="login_as" required>
+            <option value="" disabled {{ 'selected' if not login_as }}>Select your portal…</option>
+            <option value="admin" {{ 'selected' if login_as == 'admin' }}>Admin</option>
+            <option value="supply_chain" {{ 'selected' if login_as == 'supply_chain' }}>Supply Chain Staff</option>
+            <option value="pharmacy" {{ 'selected' if login_as == 'pharmacy' }}>Pharmacy Staff</option>
+            <option value="lab" {{ 'selected' if login_as == 'lab' }}>Lab Staff</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value="{{ email or '' }}"
+            placeholder="you@institution.org"
+            required
+            autofocus
+          >
+        </div>
+
+        <div class="field-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <div class="field-row">
+          <label class="remember-check">
+            <input type="checkbox" name="remember">
+            <span>Remember me</span>
+          </label>
+        </div>
+
+        <button type="submit" class="login-submit">Log In</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  .login-shell {
+    min-height: calc(100vh - 60px);
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+  }
+
+  /* ---------------- Brand panel ---------------- */
+
+  .login-brand {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 30% 0%, #16241c 0%, #0b100d 65%);
+    padding: 48px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid var(--border-color, #2a352e);
+  }
+
+  .login-brand-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(95, 203, 122, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(95, 203, 122, 0.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(ellipse at 20% 10%, black 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .login-brand-top { position: relative; z-index: 1; }
+
+  .brand-mark {
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #eef4ef;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-tagline {
+    margin-top: 14px;
+    max-width: 320px;
+    font-size: 17px;
+    line-height: 1.5;
+    color: #93A897;
+  }
+
+  .manifest-preview {
+    position: relative;
+    z-index: 1;
+    background: rgba(15, 21, 18, 0.75);
+    border: 1px solid #2C3A2F;
+    border-radius: 12px;
+    padding: 16px 18px;
+    backdrop-filter: blur(6px);
+    max-width: 360px;
+  }
+
+  .manifest-preview-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: #6b7a71;
+    margin-bottom: 12px;
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #5FCB7A;
+    display: inline-block;
+    animation: pulse 1.8s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .manifest-preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-top: 1px solid #202b23;
+    font-size: 13px;
+  }
+  .manifest-preview-row:first-of-type { border-top: none; }
+
+  .mp-name { color: #d7e0da; }
+
+  .mp-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .mp-in  { background: rgba(95, 203, 122, 0.14); color: #5FCB7A; }
+  .mp-out { background: rgba(231, 162, 61, 0.14); color: #E7A23D; }
+  .mp-low { background: rgba(217, 97, 79, 0.14); color: #D9614F; }
+
+  .login-brand-foot {
+    position: relative;
+    z-index: 1;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: #4d5c52;
+  }
+
+  /* ---------------- Form panel ---------------- */
+
+  .login-form-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+    background: #0f1512;
+  }
+
+  .login-form-card {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .login-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5FCB7A;
+  }
+
+  .login-heading {
+    font-family: 'Inter', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: #eef4ef;
+    margin-top: 10px;
+  }
+
+  .login-sub {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #93A897;
+    margin-bottom: 32px;
+  }
+
+  .login-flashes { margin-bottom: 20px; }
+  .login-flash {
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #2a352e;
+  }
+  .login-flash-error   { color: #e2574c; border-color: #e2574c; background: rgba(226,87,76,0.08); }
+  .login-flash-success { color: #5FCB7A; border-color: #5FCB7A; background: rgba(95,203,122,0.08); }
+  .login-flash-warning { color: #E7A23D; border-color: #E7A23D; background: rgba(231,162,61,0.08); }
+  .login-flash-info    { color: #4c9be2; border-color: #4c9be2; background: rgba(76,155,226,0.08); }
+
+  .field-group { margin-bottom: 18px; }
+
+  .field-group label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #6b7a71;
+    margin-bottom: 8px;
+  }
+
+  .field-group input,
+  .field-group select {
+    width: 100%;
+    padding: 12px 14px;
+    background: #161d19;
+    border: 1px solid #2a352e;
+    border-radius: 8px;
+    color: #eef4ef;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .field-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2393A897' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .field-group select option {
+    background: #161d19;
+    color: #eef4ef;
+  }
+
+  .field-group input::placeholder { color: #4d5c52; }
+
+  .field-group input:focus,
+  .field-group select:focus {
+    outline: none;
+    border-color: #5FCB7A;
+    box-shadow: 0 0 0 3px rgba(95, 203, 122, 0.15);
+  }
+
+  .field-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .remember-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #93A897;
+    cursor: pointer;
+  }
+  .remember-check input { width: auto; accent-color: #5FCB7A; }
+
+  .login-submit {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    background: #5FCB7A;
+    color: #08120d;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .login-submit:hover { background: #4fb968; }
+  .login-submit:active { transform: translateY(1px); }
+
+  .login-submit:focus-visible,
+  .remember-check input:focus-visible,
+  .field-group input:focus-visible {
+    outline: 2px solid #5FCB7A;
+    outline-offset: 2px;
+  }
+
+  /* ---------------- Responsive ---------------- */
+
+  @media (max-width: 860px) {
+    .login-shell { grid-template-columns: 1fr; }
+    .login-brand { display: none; }
+    .login-form-panel { padding: 32px 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot { animation: none; }
+  }
+</style>
+{% endblock %}
